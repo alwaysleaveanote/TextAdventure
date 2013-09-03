@@ -1,0 +1,10 @@
+package Zones;
+import Items.*;
+
+public interface ZoneInterface {
+	public void description();
+	public ZoneInterface getDirection(String input);
+	public boolean rulebookExists();
+	public void dropItem(ItemsInterface item);
+	public void takeItem(ItemsInterface item);
+}
