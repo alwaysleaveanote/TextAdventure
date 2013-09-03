@@ -1,0 +1,103 @@
+package Client;
+import Zones.*;
+import Character.*;
+import Items.*;
+
+import java.io.*;
+import java.util.*;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.StaxDriver;
+
+public class Client {	
+	public static OverarchingMap map;
+	public static ZoneInterface location;
+	public static Scanner scan = new Scanner(System.in);
+	
+	public static void main(String[] args) throws FileNotFoundException {
+		while (map == null) {
+			System.out.println("Do you want to load a game?");
+			String answer = scan.nextLine();
+			if (answer.toLowerCase().startsWith("y")) { //if loading game
+				System.out.println("What character do you want to load?");
+				String characterName = scan.nextLine().toLowerCase();
+				if (new File(characterName +".txt").exists()) {
+					map = load(characterName);
+					location = map.you.getLocation();
+				} else {
+					System.out.println("No character exists with that name.\n");
+				}
+			} else { //if creating new game
+				map = new OverarchingMap();
+				map.createFields();
+				System.out.println("What is your name?");
+				String name = scan.nextLine();
+				map.you.setName(name);
+				location = map.zone1;
+			}
+		}
+				
+		while (location != null) {
+			map.you.setLocation(location);
+			location.description();
+			location = getOrder();
+		}
+	}
+	
+	private static ZoneInterface getOrder() throws FileNotFoundException {
+		//getting order
+		System.out.println();
+		System.out.println("What do you want to do?");
+		String order = scan.nextLine().trim().toLowerCase();	
+		System.out.println();
+		//interpreting order
+		if (!isDirection(order)) {
+			if(isItem(order)) {
+				chooseMethodForItem(order);  
+				return getOrder();
+			} else if (order.contains("save")) {
+				save(map.you.getName());
+				return getOrder();
+			} else if (order.contains("items") && order.contains("look")) {
+				map.you.printItems();
+				return getOrder();
+			} else if (order.equals("quit")) {
+				return null;
+			}
+		}
+		//eventually return a location
+		return location.getDirection(order);
+	}
+	
+	private static boolean isItem(String order) {
+		return order.contains("rulebook");
+	}
+	
+	private static void chooseMethodForItem(String order) {
+		if (order.contains("rulebook")) {
+			map.rulebook.chooseMethod(order);
+		}
+	}
+	
+	private static boolean isDirection(String order) {
+		return (order.equals("n") || order.equals("s") || order.equals("e") || order.equals("w")
+				|| order.contains("north") || order.contains("south") || order.contains("east") || order.contains("west"));
+	}
+	
+	private static void save(String characterName) throws FileNotFoundException {
+		XStream xStream = new XStream(new StaxDriver());
+		String xml = xStream.toXML(map);
+		PrintStream output = new PrintStream(new File(characterName.toLowerCase() + ".txt"));
+		output.println(xml);
+		System.out.println("Your game has been saved.");
+	}
+	
+	private static OverarchingMap load(String characterName) throws FileNotFoundException {
+		Scanner fileScan = new Scanner(new File(characterName + ".txt"));
+		String xml = fileScan.nextLine();
+		XStream xStream = new XStream(new StaxDriver());
+		OverarchingMap map = (OverarchingMap)xStream.fromXML(xml);
+		map.load();
+		return map;
+	}
+}
