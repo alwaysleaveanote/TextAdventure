@@ -1,0 +1,52 @@
+package Zones;
+import Items.*;
+
+public class Zone1 extends OverarchingMap implements ZoneInterface {
+	private boolean rulebookExists = true;
+	
+	public Zone1() {
+
+	}
+	
+	public void description() {
+		System.out.println("You're in zone 1");
+		System.out.println("There is a path East and a path South");
+		if (rulebookExists) {
+			System.out.println("There is a rulebook in front of you");
+		}
+	}
+	
+	public ZoneInterface getDirection(String input) {
+		
+		if(input.equals("n") || input.contains("north")) {
+			System.out.println("You can't go that direction");
+			return this;
+		} else if (input.equals("e") || input.contains("east")) {
+			return super.zone2;
+		} else if (input.equals("s") || input.contains("south")) {
+			return super.zone3;
+		} else if (input.equals("w") || input.contains("west")) {
+			System.out.println("You can't go that direction");
+			return this;
+		} else {
+			return this;
+		}
+	}
+	
+	//getters and setters
+	public boolean rulebookExists() {
+		return rulebookExists;
+	}
+		
+	public void takeItem(ItemsInterface item) {
+		if (item.equals(rulebook)) {
+			rulebookExists = false;
+		}
+	}
+	
+	public void dropItem(ItemsInterface item) {
+		if (item.equals(rulebook)) {
+			rulebookExists = true;		
+		}
+	}
+}
